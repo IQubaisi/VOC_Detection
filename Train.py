@@ -12,6 +12,7 @@ import torchvision.transforms as T
 def setup_wandb(config):
     wandb.init(
         project="voc-detection",
+        name=config['run_name'],
         config = config
     )
 
@@ -153,10 +154,10 @@ def main():
     
     setup_wandb(config)
     
-    root = './data/VOCdevkit/VOC2007'
+    root = 'C:/Users/dimme.DESKTOP-U89M8E0/Desktop/VOC_Detection/data/VOCdevkit/VOC2007'
     train_loader, val_loader = get_dataloaders(root, config['batch_size'])
     
-    model = get_training_model(config['num_classes'], device)
+    model = get_training_model(config['num_classes'], device, config['box_nms_thresh'])
     optimizer = get_optimizer(
         model,
         config['learning_rate'],
@@ -165,7 +166,7 @@ def main():
     )
     
     # Train
-    train(model, train_loader, val_loader, optimizer, device, config['epochs'])
+    train(model, train_loader, val_loader, optimizer, device, config['epochs'], config['run_name'])
     
     wandb.finish()
 
