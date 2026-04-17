@@ -1,0 +1,18 @@
+C:\Users\dimme.DESKTOP-U89M8E0\AppData\Local\anaconda3\envs\voc_detection\lib\site-packages\torchvision\models\_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+C:\Users\dimme.DESKTOP-U89M8E0\AppData\Local\anaconda3\envs\voc_detection\lib\site-packages\torchvision\models\_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=ResNet101_Weights.IMAGENET1K_V1`. You can also use `weights=ResNet101_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Traceback (most recent call last):
+  File "C:\Users\dimme.DESKTOP-U89M8E0\Desktop\VOC_Detection\train.py", line 151, in <module>
+    main()
+  File "C:\Users\dimme.DESKTOP-U89M8E0\Desktop\VOC_Detection\train.py", line 146, in main
+    train(model, train_loader, val_loader, optimizer, device, config['epochs'])
+  File "C:\Users\dimme.DESKTOP-U89M8E0\Desktop\VOC_Detection\train.py", line 77, in train
+    losses.backward()
+  File "C:\Users\dimme.DESKTOP-U89M8E0\AppData\Local\anaconda3\envs\voc_detection\lib\site-packages\torch\_tensor.py", line 631, in backward
+    torch.autograd.backward(
+  File "C:\Users\dimme.DESKTOP-U89M8E0\AppData\Local\anaconda3\envs\voc_detection\lib\site-packages\torch\autograd\__init__.py", line 381, in backward
+    _engine_run_backward(
+  File "C:\Users\dimme.DESKTOP-U89M8E0\AppData\Local\anaconda3\envs\voc_detection\lib\site-packages\torch\autograd\graph.py", line 869, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+KeyboardInterrupt

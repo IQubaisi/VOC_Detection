@@ -1,0 +1,6 @@
+Downloading: "https://download.pytorch.org/models/resnet101-cd907fc2.pth" to C:\Users\dimme.DESKTOP-U89M8E0/.cache\torch\hub\checkpoints\resnet101-cd907fc2.pth
+100.0%
+Epoch 1/10 | Train Loss: 0.4418 | Val Loss: 0.4307
+Epoch 2/10 | Train Loss: 0.3809 | Val Loss: 0.3937
+Epoch 3/10 | Train Loss: 0.3371 | Val Loss: 0.3720
+Epoch 4/10 | Train Loss: 0.3111 | Val Loss: 0.3614

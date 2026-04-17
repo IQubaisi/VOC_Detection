@@ -1,0 +1,16 @@
+Epoch 1/10 | Train Loss: 0.4461 | Val Loss: 0.4360
+Checkpoint saved: checkpoints\model_epoch_1.pth
+Traceback (most recent call last):
+  File "C:\Users\dimme.DESKTOP-U89M8E0\Desktop\VOC_Detection\Train.py", line 171, in <module>
+    main()
+  File "C:\Users\dimme.DESKTOP-U89M8E0\Desktop\VOC_Detection\Train.py", line 166, in main
+    train(model, train_loader, val_loader, optimizer, device, config['epochs'])
+  File "C:\Users\dimme.DESKTOP-U89M8E0\Desktop\VOC_Detection\Train.py", line 75, in train
+    loss_dict = model(images, targets)
+  File "C:\Users\dimme.DESKTOP-U89M8E0\AppData\Local\anaconda3\envs\voc_detection\lib\site-packages\torch\nn\modules\module.py", line 1751, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "C:\Users\dimme.DESKTOP-U89M8E0\AppData\Local\anaconda3\envs\voc_detection\lib\site-packages\torch\nn\modules\module.py", line 1762, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "C:\Users\dimme.DESKTOP-U89M8E0\AppData\Local\anaconda3\envs\voc_detection\lib\site-packages\torchvision\models\detection\generalized_rcnn.py", line 91, in forward
+    if degenerate_boxes.any():
+KeyboardInterrupt
