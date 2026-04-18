@@ -1,12 +1,12 @@
 # Dataset
-data\
+data/
 
 # Model checkpoints
-checkpoints\
+checkpoints/
 
 # Python cache
-__pycache__\
+__pycache__/
 *.pyc
 
 # Wandb logs
-wandb\
+wandb/
