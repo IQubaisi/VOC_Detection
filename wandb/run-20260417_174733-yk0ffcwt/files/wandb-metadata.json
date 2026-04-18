@@ -1,0 +1,21 @@
+{
+  "os": "Windows-10-10.0.19045-SP0",
+  "python": "CPython 3.10.20",
+  "startedAt": "2026-04-17T16:47:33.601813Z",
+  "args": [
+    "--box_nms_thresh",
+    "0.3",
+    "--learning_rate",
+    "0.001",
+    "--run_name",
+    "exp3_nms03"
+  ],
+  "program": "C:\\Users\\dimme.DESKTOP-U89M8E0\\Documents\\GitHub\\VOC_Detection\\Train.py",
+  "codePath": "Train.py",
+  "codePathLocal": "Train.py",
+  "email": "szy46qgx7c@privaterelay.appleid.com",
+  "root": "C:\\Users\\dimme.DESKTOP-U89M8E0\\Documents\\GitHub\\VOC_Detection",
+  "host": "DESKTOP-U89M8E0",
+  "executable": "C:\\Users\\dimme.DESKTOP-U89M8E0\\AppData\\Local\\anaconda3\\envs\\voc_detection\\python.exe",
+  "writerId": "3rawdm2n80dquuzh1hu5be934a33fm49"
+}

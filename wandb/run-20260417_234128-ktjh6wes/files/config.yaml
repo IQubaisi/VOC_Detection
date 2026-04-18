@@ -1,0 +1,47 @@
+_wandb:
+    value:
+        cli_version: 0.25.1
+        e:
+            hpk6v569smyj4b3az4qxkj6fhdqr8d56:
+                args:
+                    - --checkpoint
+                    - checkpoints/exp3_nms03_epoch_5.pth
+                    - --run_name
+                    - eval_exp3_nms03
+                codePath: Evaluate.py
+                codePathLocal: Evaluate.py
+                email: szy46qgx7c@privaterelay.appleid.com
+                executable: C:\Users\dimme.DESKTOP-U89M8E0\AppData\Local\anaconda3\envs\voc_detection\python.exe
+                git:
+                    commit: 24723b897325ff80b340f64e3c0e4d1cf2da6ccc
+                    remote: https://github.com/IQubaisi/VOC_Detection.git
+                host: DESKTOP-U89M8E0
+                os: Windows-10-10.0.19045-SP0
+                program: C:\Users\dimme.DESKTOP-U89M8E0\Documents\GitHub\VOC_Detection\Evaluate.py
+                python: CPython 3.10.20
+                root: C:\Users\dimme.DESKTOP-U89M8E0\Documents\GitHub\VOC_Detection
+                startedAt: "2026-04-17T22:41:28.909689Z"
+                writerId: hpk6v569smyj4b3az4qxkj6fhdqr8d56
+        m: []
+        python_version: 3.10.20
+        t:
+            "1":
+                - 1
+                - 41
+            "2":
+                - 1
+                - 41
+            "3":
+                - 2
+                - 13
+                - 16
+            "4": 3.10.20
+            "5": 0.25.1
+            "8":
+                - 3
+            "12": 0.25.1
+            "13": windows-amd64
+checkpoint:
+    value: checkpoints/exp3_nms03_epoch_5.pth
+num_classes:
+    value: 5

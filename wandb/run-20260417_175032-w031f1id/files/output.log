@@ -1,0 +1,20 @@
+Epoch 1/10 | Train Loss: 0.4512 | Val Loss: 0.4653
+Checkpoint saved: checkpoints\exp3_nms03_epoch_1.pth
+Epoch 2/10 | Train Loss: 0.4194 | Val Loss: 0.4333
+Checkpoint saved: checkpoints\exp3_nms03_epoch_2.pth
+Epoch 3/10 | Train Loss: 0.3845 | Val Loss: 0.4249
+Checkpoint saved: checkpoints\exp3_nms03_epoch_3.pth
+Epoch 4/10 | Train Loss: 0.3542 | Val Loss: 0.4114
+Checkpoint saved: checkpoints\exp3_nms03_epoch_4.pth
+Epoch 5/10 | Train Loss: 0.3301 | Val Loss: 0.3661
+Checkpoint saved: checkpoints\exp3_nms03_epoch_5.pth
+Epoch 6/10 | Train Loss: 0.3071 | Val Loss: 0.3713
+Checkpoint saved: checkpoints\exp3_nms03_epoch_6.pth
+Epoch 7/10 | Train Loss: 0.2897 | Val Loss: 0.3848
+Checkpoint saved: checkpoints\exp3_nms03_epoch_7.pth
+Epoch 8/10 | Train Loss: 0.2738 | Val Loss: 0.3737
+Checkpoint saved: checkpoints\exp3_nms03_epoch_8.pth
+Epoch 9/10 | Train Loss: 0.2584 | Val Loss: 0.3812
+Checkpoint saved: checkpoints\exp3_nms03_epoch_9.pth
+Epoch 10/10 | Train Loss: 0.2431 | Val Loss: 0.3758
+Checkpoint saved: checkpoints\exp3_nms03_epoch_10.pth

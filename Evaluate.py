@@ -9,6 +9,77 @@ import os
 import wandb
 import argparse
 
+# UPDATED-SECTION 2: Soft-NMS helper — calculates IoU between one box and many boxes
+def compute_iou(box, boxes):
+    x1 = torch.max(box[:, 0], boxes[:, 0])
+    y1 = torch.max(box[:, 1], boxes[:, 1])
+    x2 = torch.min(box[:, 2], boxes[:, 2])
+    y2 = torch.min(box[:, 3], boxes[:, 3])
+
+    intersection = (x2 - x1).clamp(0) * (y2 - y1).clamp(0)
+
+    box_area   = (box[:, 2]   - box[:, 0])   * (box[:, 3]   - box[:, 1])
+    boxes_area = (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
+
+    union = box_area + boxes_area - intersection
+    return intersection / union
+
+# UPDATED-SECTION 3: Soft-NMS — decays scores of overlapping boxes instead of removing them
+def apply_soft_nms(prediction, sigma=0.5, score_threshold=0.05):
+    boxes  = prediction['boxes']
+    scores = prediction['scores']
+    labels = prediction['labels']
+
+    keep_boxes  = []
+    keep_scores = []
+    keep_labels = []
+
+    unique_labels = labels.unique()
+
+    for cls in unique_labels:
+        cls_mask   = labels == cls
+        cls_boxes  = boxes[cls_mask]
+        cls_scores = scores[cls_mask].clone()
+        cls_labels = labels[cls_mask]
+
+        while cls_scores.numel() > 0:
+            top_idx = cls_scores.argmax()
+
+            keep_boxes.append(cls_boxes[top_idx])
+            keep_scores.append(cls_scores[top_idx])
+            keep_labels.append(cls_labels[top_idx])
+
+            cls_boxes  = torch.cat([cls_boxes[:top_idx],  cls_boxes[top_idx+1:]])
+            cls_scores = torch.cat([cls_scores[:top_idx], cls_scores[top_idx+1:]])
+            cls_labels = torch.cat([cls_labels[:top_idx], cls_labels[top_idx+1:]])
+
+            if cls_scores.numel() == 0:
+                break
+
+            kept_box = keep_boxes[-1].unsqueeze(0)
+            iou      = compute_iou(kept_box, cls_boxes)
+
+            decay      = torch.exp(-(iou ** 2) / sigma)
+            cls_scores = cls_scores * decay
+
+            surviving  = cls_scores >= score_threshold
+            cls_boxes  = cls_boxes[surviving]
+            cls_scores = cls_scores[surviving]
+            cls_labels = cls_labels[surviving]
+
+    if len(keep_boxes) == 0:
+        return {
+            'boxes':  torch.zeros((0, 4)),
+            'scores': torch.zeros(0),
+            'labels': torch.zeros(0, dtype=torch.int64)
+        }
+
+    return {
+        'boxes':  torch.stack(keep_boxes),
+        'scores': torch.stack(keep_scores),
+        'labels': torch.stack(keep_labels)
+    }
+
 # SECTION 2: Load the model from a checkpoint
 def load_model(checkpoint_path, num_classes, device):
     model = get_model(num_classes=num_classes)
@@ -35,6 +106,7 @@ def get_predictions(model, val_loader, device):
                 })
 
             for target in targets:
+                prediction = apply_soft_nms(output, sigma=sigma)
                 all_targets.append({
                     'boxes': target['boxes'].cpu(),
                     'labels': target['labels'].cpu()

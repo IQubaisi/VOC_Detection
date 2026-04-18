@@ -1,0 +1,56 @@
+_wandb:
+    value:
+        cli_version: 0.25.1
+        e:
+            3rawdm2n80dquuzh1hu5be934a33fm49:
+                args:
+                    - --box_nms_thresh
+                    - "0.3"
+                    - --learning_rate
+                    - "0.001"
+                    - --run_name
+                    - exp3_nms03
+                codePath: Train.py
+                codePathLocal: Train.py
+                email: szy46qgx7c@privaterelay.appleid.com
+                executable: C:\Users\dimme.DESKTOP-U89M8E0\AppData\Local\anaconda3\envs\voc_detection\python.exe
+                host: DESKTOP-U89M8E0
+                os: Windows-10-10.0.19045-SP0
+                program: C:\Users\dimme.DESKTOP-U89M8E0\Documents\GitHub\VOC_Detection\Train.py
+                python: CPython 3.10.20
+                root: C:\Users\dimme.DESKTOP-U89M8E0\Documents\GitHub\VOC_Detection
+                startedAt: "2026-04-17T16:47:33.601813Z"
+                writerId: 3rawdm2n80dquuzh1hu5be934a33fm49
+        m: []
+        python_version: 3.10.20
+        t:
+            "1":
+                - 1
+                - 41
+            "2":
+                - 1
+                - 41
+            "3":
+                - 16
+            "4": 3.10.20
+            "5": 0.25.1
+            "8":
+                - 3
+            "12": 0.25.1
+            "13": windows-amd64
+batch_size:
+    value: 2
+box_nms_thresh:
+    value: 0.3
+epochs:
+    value: 10
+learning_rate:
+    value: 0.001
+momentum:
+    value: 0.9
+num_classes:
+    value: 5
+run_name:
+    value: exp3_nms03
+weight_decay:
+    value: 0.0005

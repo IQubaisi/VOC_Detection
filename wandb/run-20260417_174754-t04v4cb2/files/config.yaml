@@ -1,0 +1,73 @@
+_wandb:
+    value:
+        cli_version: 0.25.1
+        e:
+            i8zsx9okj73lebttw4xf0qwxfil6vaa5:
+                args:
+                    - --box_nms_thresh
+                    - "0.3"
+                    - --learning_rate
+                    - "0.001"
+                    - --run_name
+                    - exp3_nms03
+                codePath: Train.py
+                codePathLocal: Train.py
+                cpu_count: 8
+                cpu_count_logical: 16
+                cudaVersion: "13.2"
+                disk:
+                    /:
+                        total: "1022984777728"
+                        used: "271355559936"
+                email: szy46qgx7c@privaterelay.appleid.com
+                executable: C:\Users\dimme.DESKTOP-U89M8E0\AppData\Local\anaconda3\envs\voc_detection\python.exe
+                gpu: NVIDIA GeForce RTX 2080 Ti
+                gpu_count: 1
+                gpu_nvidia:
+                    - architecture: Turing
+                      cudaCores: 4352
+                      memoryTotal: "11811160064"
+                      name: NVIDIA GeForce RTX 2080 Ti
+                      uuid: GPU-e4462a50-fae2-773a-eb35-9fc796140e7b
+                host: DESKTOP-U89M8E0
+                memory:
+                    total: "68523331584"
+                os: Windows-10-10.0.19045-SP0
+                program: C:\Users\dimme.DESKTOP-U89M8E0\Documents\GitHub\VOC_Detection\Train.py
+                python: CPython 3.10.20
+                root: C:\Users\dimme.DESKTOP-U89M8E0\Documents\GitHub\VOC_Detection
+                startedAt: "2026-04-17T16:47:54.124558Z"
+                writerId: i8zsx9okj73lebttw4xf0qwxfil6vaa5
+        m: []
+        python_version: 3.10.20
+        t:
+            "1":
+                - 1
+                - 41
+            "2":
+                - 1
+                - 41
+            "3":
+                - 16
+            "4": 3.10.20
+            "5": 0.25.1
+            "8":
+                - 3
+            "12": 0.25.1
+            "13": windows-amd64
+batch_size:
+    value: 2
+box_nms_thresh:
+    value: 0.3
+epochs:
+    value: 10
+learning_rate:
+    value: 0.001
+momentum:
+    value: 0.9
+num_classes:
+    value: 5
+run_name:
+    value: exp3_nms03
+weight_decay:
+    value: 0.0005

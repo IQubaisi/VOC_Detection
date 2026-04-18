@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "C:\Users\dimme.DESKTOP-U89M8E0\Documents\GitHub\VOC_Detection\Train.py", line 173, in <module>
+    main()
+  File "C:\Users\dimme.DESKTOP-U89M8E0\Documents\GitHub\VOC_Detection\Train.py", line 157, in main
+    train_loader, val_loader = get_dataloaders(root, config['batch_size'])
+  File "C:\Users\dimme.DESKTOP-U89M8E0\Documents\GitHub\VOC_Detection\Train.py", line 22, in get_dataloaders
+    train_dataset = VOCDataset(root=root, split='train', transforms=transforms)
+  File "C:\Users\dimme.DESKTOP-U89M8E0\Documents\GitHub\VOC_Detection\Dataset.py", line 22, in __init__
+    with open(split_file) as f:
+FileNotFoundError: [Errno 2] No such file or directory: './data/VOCdevkit/VOC2007\\ImageSets\\Main\\train.txt'
