@@ -10,12 +10,13 @@ from Models import get_model
 import os
 
 # SECTION 2: Settings — change these to control what the script does
-CHECKPOINT = 'checkpoints/model_epoch_7.pth'
+CHECKPOINT = 'checkpoints/exp5_scheduler_epoch_10.pth'
 ROOT = './data/VOCdevkit/VOC2007'
 NUM_CLASSES = 5
-CONFIDENCE_THRESHOLD = 0.7  # only show predictions the model is at least 50% confident about
+CONFIDENCE_THRESHOLD = 0.5  # only show predictions the model is at least 50% confident about
+APPLY_SOFT_NMS = True      # Toggle NMS True/Flase
 IMAGE_PATH = None            # None = grab from VOC dataset, or set to 'your_image.jpg'
-IMAGE_INDEX = 5              # which VOC image to use if IMAGE_PATH is None
+IMAGE_INDEX = 10              # which VOC image to use if IMAGE_PATH is None
 
 # SECTION 3: Class labels and colours — one colour per class for the boxes
 CLASS_NAMES = {1: 'person', 2: 'car', 3: 'bus', 4: 'bicycle'}
@@ -51,6 +52,77 @@ def load_image(image_path, root, image_index):
 
     return image, source
 
+# NMS+
+def compute_iou(box, boxes):
+    x1 = torch.max(box[:, 0], boxes[:, 0])
+    y1 = torch.max(box[:, 1], boxes[:, 1])
+    x2 = torch.min(box[:, 2], boxes[:, 2])
+    y2 = torch.min(box[:, 3], boxes[:, 3])
+
+    intersection = (x2 - x1).clamp(0) * (y2 - y1).clamp(0)
+
+    box_area   = (box[:, 2]   - box[:, 0])   * (box[:, 3]   - box[:, 1])
+    boxes_area = (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
+
+    union = box_area + boxes_area - intersection
+    return intersection / union
+
+#NMS+
+def apply_soft_nms(prediction, sigma=0.5, score_threshold=0.05):
+    boxes  = prediction['boxes'].cpu()
+    scores = prediction['scores'].cpu()
+    labels = prediction['labels'].cpu()
+
+    keep_boxes  = []
+    keep_scores = []
+    keep_labels = []
+
+    unique_labels = labels.unique()
+
+    for cls in unique_labels:
+        cls_mask   = labels == cls
+        cls_boxes  = boxes[cls_mask]
+        cls_scores = scores[cls_mask].clone()
+        cls_labels = labels[cls_mask]
+
+        while cls_scores.numel() > 0:
+            top_idx = cls_scores.argmax()
+
+            keep_boxes.append(cls_boxes[top_idx])
+            keep_scores.append(cls_scores[top_idx])
+            keep_labels.append(cls_labels[top_idx])
+
+            cls_boxes  = torch.cat([cls_boxes[:top_idx],  cls_boxes[top_idx+1:]])
+            cls_scores = torch.cat([cls_scores[:top_idx], cls_scores[top_idx+1:]])
+            cls_labels = torch.cat([cls_labels[:top_idx], cls_labels[top_idx+1:]])
+
+            if cls_scores.numel() == 0:
+                break
+
+            kept_box = keep_boxes[-1].unsqueeze(0)
+            iou      = compute_iou(kept_box, cls_boxes)
+
+            decay      = torch.exp(-(iou ** 2) / sigma)
+            cls_scores = cls_scores * decay
+
+            surviving  = cls_scores >= score_threshold
+            cls_boxes  = cls_boxes[surviving]
+            cls_scores = cls_scores[surviving]
+            cls_labels = cls_labels[surviving]
+
+    if len(keep_boxes) == 0:
+        return {
+            'boxes':  torch.zeros((0, 4)),
+            'scores': torch.zeros(0),
+            'labels': torch.zeros(0, dtype=torch.int64)
+        }
+
+    return {
+        'boxes':  torch.stack(keep_boxes),
+        'scores': torch.stack(keep_scores),
+        'labels': torch.stack(keep_labels)
+    }
+
 # SECTION 6: Run model on image
 def run_inference(model, image, device):
     # Convert PIL image to tensor — same transform used in training
@@ -63,7 +135,10 @@ def run_inference(model, image, device):
         outputs = model([tensor])
 
     # outputs is a list with one dict — we take the first element
-    return outputs[0]
+    output = outputs[0]
+    if APPLY_SOFT_NMS:
+        output = apply_soft_nms(output)
+    return output
 
 # SECTION 7: Draw boxes on image and show it
 def draw_predictions(image, outputs, confidence_threshold):

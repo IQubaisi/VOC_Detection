@@ -9,7 +9,7 @@ import os
 import wandb
 import argparse
 
-# UPDATED-SECTION 2: Soft-NMS helper — calculates IoU between one box and many boxes
+# SECTION 2: Soft-NMS helper — calculates IoU between one box and many boxes
 def compute_iou(box, boxes):
     x1 = torch.max(box[:, 0], boxes[:, 0])
     y1 = torch.max(box[:, 1], boxes[:, 1])
@@ -24,11 +24,11 @@ def compute_iou(box, boxes):
     union = box_area + boxes_area - intersection
     return intersection / union
 
-# UPDATED-SECTION 3: Soft-NMS — decays scores of overlapping boxes instead of removing them
+# SECTION 3: Soft-NMS — decays scores of overlapping boxes instead of removing them
 def apply_soft_nms(prediction, sigma=0.5, score_threshold=0.05):
-    boxes  = prediction['boxes']
-    scores = prediction['scores']
-    labels = prediction['labels']
+    boxes  = prediction['boxes'].cpu()
+    scores = prediction['scores'].cpu()
+    labels = prediction['labels'].cpu()
 
     keep_boxes  = []
     keep_scores = []
@@ -80,7 +80,7 @@ def apply_soft_nms(prediction, sigma=0.5, score_threshold=0.05):
         'labels': torch.stack(keep_labels)
     }
 
-# SECTION 2: Load the model from a checkpoint
+# SECTION 4: Load the model from a checkpoint
 def load_model(checkpoint_path, num_classes, device):
     model = get_model(num_classes=num_classes)
     model.load_state_dict(torch.load(checkpoint_path, map_location=device))
@@ -88,43 +88,49 @@ def load_model(checkpoint_path, num_classes, device):
     model.eval()
     return model
 
-# SECTION 3: Run model on validation set and collect predictions
-def get_predictions(model, val_loader, device):
+# SECTION 5: Run model on validation set and collect predictions
+def get_predictions(model, val_loader, device, sigma, soft_nms):
     all_predictions = []
-    all_targets = []
+    all_targets     = []
 
     with torch.no_grad():
         for images, targets in val_loader:
-            images = [img.to(device) for img in images]
+            images  = [img.to(device) for img in images]
             outputs = model(images)
 
             for output in outputs:
-                all_predictions.append({
-                    'boxes': output['boxes'].cpu(),
-                    'scores': output['scores'].cpu(),
-                    'labels': output['labels'].cpu()
-                })
+                # ← THIS IS THE ONLY LINE THAT CHANGED
+                # Previously: appended raw output directly
+                # Now: runs Soft-NMS first, then appends
+                if soft_nms:
+                    prediction = apply_soft_nms(output, sigma=sigma)
+                else:
+                    prediction = {
+                        'boxes':  output['boxes'].cpu(),
+                        'scores': output['scores'].cpu(),
+                        'labels': output['labels'].cpu()
+                    }
+                all_predictions.append(prediction)
 
             for target in targets:
-                prediction = apply_soft_nms(output, sigma=sigma)
                 all_targets.append({
-                    'boxes': target['boxes'].cpu(),
+                    'boxes':  target['boxes'].cpu(),
                     'labels': target['labels'].cpu()
                 })
 
     return all_predictions, all_targets
 
-# SECTION 4: Calculate mAP
-def evaluate(checkpoint_path, root, num_classes, run_name):
+# SECTION 6: Calculate mAP
+def evaluate(checkpoint_path, root, num_classes, run_name, sigma, soft_nms):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'Using device: {device}')
 
     model = load_model(checkpoint_path, num_classes, device)
     print(f'Loaded model from {checkpoint_path}')
 
-    transforms = T.Compose([T.ToTensor()])
+    transforms  = T.Compose([T.ToTensor()])
     val_dataset = VOCDataset(root=root, split='val', transforms=transforms)
-    val_loader = DataLoader(
+    val_loader  = DataLoader(
         val_dataset,
         batch_size=2,
         shuffle=False,
@@ -133,16 +139,13 @@ def evaluate(checkpoint_path, root, num_classes, run_name):
     print(f'Validation set: {len(val_dataset)} images')
 
     print('Running model on validation set...')
-    predictions, targets = get_predictions(model, val_loader, device)
+    predictions, targets = get_predictions(model, val_loader, device, sigma, soft_nms)
 
-    metric = MeanAveragePrecision(
-        iou_type='bbox',
-        class_metrics=True
-    )
+    metric = MeanAveragePrecision(iou_type='bbox', class_metrics=True)
     metric.update(predictions, targets)
     result = metric.compute()
 
-    # SECTION 5: Print results
+    # SECTION 7: Print results
     print('\n--- Evaluation Results ---')
     print(f"mAP @ IoU=0.50:0.95 : {result['map'].item():.4f}")
     print(f"mAP @ IoU=0.50      : {result['map_50'].item():.4f}")
@@ -151,45 +154,50 @@ def evaluate(checkpoint_path, root, num_classes, run_name):
     class_names = {1: 'person', 2: 'car', 3: 'bus', 4: 'bicycle'}
     print('\n--- Per Class AP (IoU=0.50:0.95) ---')
     per_class = result['map_per_class']
-    classes = result['classes']
+    classes   = result['classes']
     for cls_id, ap in zip(classes, per_class):
         name = class_names.get(cls_id.item(), f'class_{cls_id.item()}')
         print(f"  {name}: {ap.item():.4f}")
 
-    # SECTION 6: Log to WandB
+    # SECTION 8: Log to WandB
     wandb.init(
         project="voc-detection",
         name=run_name,
         config={
             'checkpoint': checkpoint_path,
-            'num_classes': num_classes
+            'num_classes': num_classes,
+            'sigma': sigma
         }
     )
     wandb.log({
-        'mAP':       result['map'].item(),
-        'mAP_50':    result['map_50'].item(),
-        'mAP_75':    result['map_75'].item(),
-        'AP_person': result['map_per_class'][0].item(),
-        'AP_car':    result['map_per_class'][1].item(),
-        'AP_bus':    result['map_per_class'][2].item(),
-        'AP_bicycle':result['map_per_class'][3].item(),
+        'mAP':        result['map'].item(),
+        'mAP_50':     result['map_50'].item(),
+        'mAP_75':     result['map_75'].item(),
+        'AP_person':  result['map_per_class'][0].item(),
+        'AP_car':     result['map_per_class'][1].item(),
+        'AP_bus':     result['map_per_class'][2].item(),
+        'AP_bicycle': result['map_per_class'][3].item(),
     })
     wandb.finish()
 
-# SECTION 7: Argparse
+# SECTION 9: Argparse
 def main():
     parser = argparse.ArgumentParser(description='Evaluate Faster R-CNN on Pascal VOC 2007')
-    parser.add_argument('--checkpoint',  type=str,   default='checkpoints/model_epoch_7.pth', help='Path to checkpoint file')
-    parser.add_argument('--root',        type=str,   default='./data/VOCdevkit/VOC2007',       help='Path to VOC dataset')
-    parser.add_argument('--num_classes', type=int,   default=5,                                help='Number of classes including background')
-    parser.add_argument('--run_name',    type=str,   default='eval',                           help='WandB run name')
+    parser.add_argument('--checkpoint',  type=str,   default='checkpoints/model_epoch_7.pth')
+    parser.add_argument('--root',        type=str,   default='./data/VOCdevkit/VOC2007')
+    parser.add_argument('--num_classes', type=int,   default=5)
+    parser.add_argument('--run_name',    type=str,   default='eval')
+    parser.add_argument('--sigma',       type=float, default=0.5)
+    parser.add_argument('--soft_nms',    action='store_true', help='Apply Soft-NMS post-processing')
     args = parser.parse_args()
 
     evaluate(
         checkpoint_path=args.checkpoint,
         root=args.root,
         num_classes=args.num_classes,
-        run_name=args.run_name
+        run_name=args.run_name,
+        sigma=args.sigma,
+        soft_nms=args.soft_nms
     )
 
 if __name__ == '__main__':

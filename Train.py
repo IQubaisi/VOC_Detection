@@ -56,8 +56,16 @@ def get_optimizer(model, learning_rate, momentum, weight_decay):
     )
     return optimizer
 
+# ADDED a scheduler
+def get_scheduler(optimizer, step_size, gamma):
+    return torch.optim.lr_scheduler.StepLR(
+        optimizer,
+        step_size=step_size,
+        gamma=gamma
+    )
+
 # SECTION 6: The Training Loop
-def train(model, train_loader, val_loader, optimizer, device, epochs, run_name='exp'):
+def train(model, train_loader, val_loader, optimizer, scheduler, device, epochs, run_name='exp'):
     def _sum_losses(output):
         if isinstance(output, dict):
             return sum(loss for loss in output.values())
@@ -113,6 +121,7 @@ def train(model, train_loader, val_loader, optimizer, device, epochs, run_name='
         # This means after epoch 1 you get model_epoch_1.pth, epoch 2 gives model_epoch_2.pth etc.
         # Evaluate.py and Inference.py will load from these files
         save_checkpoint(model, epoch + 1, run_name=run_name)
+        scheduler.step()
 
 # SECTION 7: Save Checkpoint
 def save_checkpoint(model, epoch, run_name='exp', path='checkpoints'):
@@ -122,6 +131,8 @@ def save_checkpoint(model, epoch, run_name='exp', path='checkpoints'):
     print(f'Checkpoint saved: {checkpoint_path}')
 
 def main():
+    torch.manual_seed(42)
+
     parser = argparse.ArgumentParser(description='Train Faster R-CNN on Pascal VOC 2007')
     
     parser.add_argument('--epochs',        type=int,   default=10,     help='Number of training epochs')
@@ -130,8 +141,11 @@ def main():
     parser.add_argument('--momentum',      type=float, default=0.9,    help='SGD momentum')
     parser.add_argument('--weight_decay',  type=float, default=0.0005, help='Weight decay')
     parser.add_argument('--num_classes',   type=int,   default=5,      help='Number of classes including background')
-    parser.add_argument('--box_nms_thresh', type=float, default=0.5,   help='NMS IoU threshold for box suppression')
+    parser.add_argument('--box_nms_thresh',type=float, default=0.5,    help='NMS IoU threshold for box suppression')
     parser.add_argument('--run_name',      type=str, default='exp',    help='Name for this experiment run')
+    parser.add_argument('--step_size',     type=int,   default=5,      help='LR scheduler step size')
+    parser.add_argument('--gamma',         type=float, default=0.1,    help='LR scheduler gamma')
+    parser.add_argument('--root', type=str, default='C:/Users/dimme.DESKTOP-U89M8E0/Documents/GitHub/VOC_Detection/data/VOCdevkit/VOC2007', help='Path to VOC dataset')
     
     args = parser.parse_args()
     
@@ -144,7 +158,10 @@ def main():
         'weight_decay':  args.weight_decay,
         'num_classes':   args.num_classes,
         'box_nms_thresh': args.box_nms_thresh,
-        'run_name': args.run_name
+        'run_name': args.run_name,
+        'step_size': args.step_size,
+        'gamma':     args.gamma,
+        'root': args.root
 
     }
     
@@ -154,7 +171,7 @@ def main():
     
     setup_wandb(config)
     
-    root = 'C:/Users/dimme.DESKTOP-U89M8E0/Desktop/VOC_Detection/data/VOCdevkit/VOC2007'
+    root = config['root']
     train_loader, val_loader = get_dataloaders(root, config['batch_size'])
     
     model = get_training_model(config['num_classes'], device, config['box_nms_thresh'])
@@ -166,7 +183,8 @@ def main():
     )
     
     # Train
-    train(model, train_loader, val_loader, optimizer, device, config['epochs'], config['run_name'])
+    scheduler = get_scheduler(optimizer, config['step_size'], config['gamma'])
+    train(model, train_loader, val_loader, optimizer, scheduler, device, config['epochs'], config['run_name'])
     
     wandb.finish()
 
