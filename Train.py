@@ -65,7 +65,7 @@ def get_scheduler(optimizer, step_size, gamma):
     )
 
 # SECTION 6: The Training Loop
-def train(model, train_loader, val_loader, optimizer, scheduler, device, epochs, run_name='exp'):
+def train(model, train_loader, val_loader, optimizer, scheduler, device, epochs, run_name='exp', checkpoint_path='checkpoints'):
     def _sum_losses(output):
         if isinstance(output, dict):
             return sum(loss for loss in output.values())
@@ -120,7 +120,7 @@ def train(model, train_loader, val_loader, optimizer, scheduler, device, epochs,
         # CHANGE 3: Save checkpoint after every epoch, and run name
         # This means after epoch 1 you get model_epoch_1.pth, epoch 2 gives model_epoch_2.pth etc.
         # Evaluate.py and Inference.py will load from these files
-        save_checkpoint(model, epoch + 1, run_name=run_name)
+        save_checkpoint(model, epoch + 1, run_name=run_name, path=checkpoint_path)
         scheduler.step()
 
 # SECTION 7: Save Checkpoint
@@ -146,7 +146,8 @@ def main():
     parser.add_argument('--step_size',     type=int,   default=5,      help='LR scheduler step size')
     parser.add_argument('--gamma',         type=float, default=0.1,    help='LR scheduler gamma')
     parser.add_argument('--root', type=str, default='C:/Users/dimme.DESKTOP-U89M8E0/Documents/GitHub/VOC_Detection/data/VOCdevkit/VOC2007', help='Path to VOC dataset')
-    
+    parser.add_argument('--checkpoint_path', type=str, default='checkpoints', help='Path to save checkpoints')
+
     args = parser.parse_args()
     
     config = {
@@ -161,7 +162,8 @@ def main():
         'run_name': args.run_name,
         'step_size': args.step_size,
         'gamma':     args.gamma,
-        'root': args.root
+        'root': args.root,
+        'checkpoint_path': args.checkpoint_path,
 
     }
     
@@ -184,7 +186,7 @@ def main():
     
     # Train
     scheduler = get_scheduler(optimizer, config['step_size'], config['gamma'])
-    train(model, train_loader, val_loader, optimizer, scheduler, device, config['epochs'], config['run_name'])
+    train(model, train_loader, val_loader, optimizer, scheduler, device, config['epochs'], config['run_name'], config['checkpoint_path'])
     
     wandb.finish()
 
