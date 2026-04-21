@@ -20,8 +20,8 @@ def setup_wandb(config):
 def get_dataloaders(root, batch_size):
     transforms = T.Compose([T.ToTensor()])
     
-    train_dataset = VOCDataset(root=root, split='train', transforms=transforms)
-    val_dataset = VOCDataset(root=root, split='val', transforms=transforms)
+    train_dataset = VOCDataset(root=root, split='train', transforms=transforms, augment=True)
+    val_dataset = VOCDataset(root=root, split='val', transforms=transforms, augment=False)
     
     train_loader = DataLoader(
         train_dataset,

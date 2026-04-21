@@ -13,7 +13,7 @@ import os
 CHECKPOINT = 'checkpoints/voc2012_exp2_scheduler_epoch_13.pth'
 ROOT = './data/VOCdevkit/VOC2007'
 NUM_CLASSES = 5
-CONFIDENCE_THRESHOLD = 0.3  # only show predictions the model is at least 50% confident about
+CONFIDENCE_THRESHOLD = 0.5  # only show predictions the model is at least 50% confident about
 APPLY_SOFT_NMS = True      # Toggle NMS True/False
 IMAGE_PATH = None            # None = grab from VOC dataset, or set to 'your_image.jpg'
 IMAGE_INDEX = 10              # which VOC image to use if IMAGE_PATH is None
