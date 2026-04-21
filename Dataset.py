@@ -20,6 +20,7 @@ class VOCDataset(Dataset):
         self.root = root
         self.transforms = transforms
         self.augment = augment
+        self.aug_pipeline = self.get_augmentation() if augment else None
         
         split_file = os.path.join(root, 'ImageSets', 'Main', f'{split}.txt')
         with open(split_file) as f:
@@ -65,9 +66,8 @@ class VOCDataset(Dataset):
         
         ## Applying augmentaion
         if self.augment:
-            aug = self.get_augmentation()
             image_np = np.array(image)
-            augmented = aug(image=image_np, bboxes=boxes, labels=labels)
+            augmented = self.aug_pipeline(image=image_np, bboxes=boxes, labels=labels)
             image = Image.fromarray(augmented['image'])
             boxes = [list(b) for b in augmented['bboxes']]
             labels = list(augmented['labels'])
