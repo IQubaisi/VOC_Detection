@@ -8,15 +8,16 @@ import numpy as np
 from Dataset import VOCDataset
 from Models import get_model
 import os
+import argparse
 
-# SECTION 2: Settings — change these to control what the script does
+""" # SECTION 2: Settings — change these to control what the script does
 CHECKPOINT = 'checkpoints/voc2012_exp2_scheduler_epoch_13.pth'
 ROOT = './data/VOCdevkit/VOC2007'
 NUM_CLASSES = 5
 CONFIDENCE_THRESHOLD = 0.5  # only show predictions the model is at least 50% confident about
 APPLY_SOFT_NMS = True      # Toggle NMS True/False
 IMAGE_PATH = None            # None = grab from VOC dataset, or set to 'your_image.jpg'
-IMAGE_INDEX = 10              # which VOC image to use if IMAGE_PATH is None
+IMAGE_INDEX = 10              # which VOC image to use if IMAGE_PATH is None """
 
 # SECTION 3: Class labels and colours — one colour per class for the boxes
 CLASS_NAMES = {1: 'person', 2: 'car', 3: 'bus', 4: 'bicycle'}
@@ -135,13 +136,10 @@ def run_inference(model, image, device):
         outputs = model([tensor])
 
     # outputs is a list with one dict — we take the first element
-    output = outputs[0]
-    if APPLY_SOFT_NMS:
-        output = apply_soft_nms(output)
-    return output
+    return outputs[0]
 
 # SECTION 7: Draw boxes on image and show it
-def draw_predictions(image, outputs, confidence_threshold):
+def draw_predictions(image, outputs, confidence_threshold, save_name='inference_result.png'):
     # Convert PIL image to numpy array for matplotlib
     image_np = np.array(image)
 
@@ -188,30 +186,42 @@ def draw_predictions(image, outputs, confidence_threshold):
 
     plt.axis('off')
     plt.tight_layout()
-    plt.savefig('inference_result.png', dpi=150, bbox_inches='tight')
+    plt.savefig(save_name, dpi=150, bbox_inches='tight')
     plt.show()
     print('Result saved to inference_result.png')
 
 # SECTION 8: Main
 def main():
+    parser = argparse.ArgumentParser(description='Run inference with Faster R-CNN')
+    parser.add_argument('--checkpoint', type=str, default='checkpoints/voc2012_exp2_scheduler_epoch_13.pth')
+    parser.add_argument('--root', type=str, default='./data/VOCdevkit/VOC2007')
+    parser.add_argument('--num_classes', type=int, default=5)
+    parser.add_argument('--confidence', type=float, default=0.5)
+    parser.add_argument('--image_index', type=int, default=5)
+    parser.add_argument('--image_path', type=str, default=None)
+    parser.add_argument('--soft_nms', action='store_true')
+    parser.add_argument('--save_name', type=str, default='inference_result.png')
+    args = parser.parse_args()
+
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'Using device: {device}')
 
-    model = load_model(CHECKPOINT, NUM_CLASSES, device)
-    print(f'Model loaded from {CHECKPOINT}')
+    model = load_model(args.checkpoint, args.num_classes, device)
+    print(f'Model loaded from {args.checkpoint}')
 
-    image, source = load_image(IMAGE_PATH, ROOT, IMAGE_INDEX)
+    image, source = load_image(args.image_path, args.root, args.image_index)
     print(f'Image loaded — source: {source}, size: {image.size}')
 
     outputs = run_inference(model, image, device)
 
-    # Print what the model found before drawing
-    print(f'\nRaw predictions: {len(outputs["boxes"])} boxes found')
-    print(f'After confidence filter (>{CONFIDENCE_THRESHOLD}): ', end='')
-    kept = (outputs['scores'] > CONFIDENCE_THRESHOLD).sum().item()
-    print(f'{kept} boxes kept')
+    if args.soft_nms:
+        outputs = apply_soft_nms(outputs)
 
-    draw_predictions(image, outputs, CONFIDENCE_THRESHOLD)
+    print(f'\nRaw predictions: {len(outputs["boxes"])} boxes found')
+    kept = (outputs['scores'] > args.confidence).sum().item()
+    print(f'After confidence filter (>{args.confidence}): {kept} boxes kept')
+
+    draw_predictions(image, outputs, args.confidence, args.save_name)
 
 if __name__ == '__main__':
     main()
