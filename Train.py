@@ -17,10 +17,10 @@ def setup_wandb(config):
     )
 
 # SECTION 3: Datasets and Dataloaders
-def get_dataloaders(root, batch_size):
+def get_dataloaders(root, batch_size, augment=False):
     transforms = T.Compose([T.ToTensor()])
     
-    train_dataset = VOCDataset(root=root, split='train', transforms=transforms, augment=True)
+    train_dataset = VOCDataset(root=root, split='train', transforms=transforms, augment=augment)
     val_dataset = VOCDataset(root=root, split='val', transforms=transforms, augment=False)
     
     train_loader = DataLoader(
@@ -147,6 +147,7 @@ def main():
     parser.add_argument('--gamma',         type=float, default=0.1,    help='LR scheduler gamma')
     parser.add_argument('--root', type=str, default='C:/Users/dimme.DESKTOP-U89M8E0/Documents/GitHub/VOC_Detection/data/VOCdevkit/VOC2007', help='Path to VOC dataset')
     parser.add_argument('--checkpoint_path', type=str, default='checkpoints', help='Path to save checkpoints')
+    parser.add_argument('--augment', action='store_true', help='Apply data augmentation')
 
     args = parser.parse_args()
     
@@ -174,7 +175,7 @@ def main():
     setup_wandb(config)
     
     root = config['root']
-    train_loader, val_loader = get_dataloaders(root, config['batch_size'])
+    train_loader, val_loader = get_dataloaders(root, config['batch_size'], args.augment)
     
     model = get_training_model(config['num_classes'], device, config['box_nms_thresh'])
     optimizer = get_optimizer(
