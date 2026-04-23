@@ -28,7 +28,7 @@ class VOCDataset(Dataset):
         
         self.image_ids = [id for id in self.image_ids if self.has_valid_objects(id)]
 
-## NEW SECTION: Defining the augmentaion pipeline
+## NEW SECTION: Defining the augmentaion pipeline ; +Removed Resizecrop
     def get_augmentation(self):
         return A.Compose([
             A.HorizontalFlip(p=0.5),
@@ -37,11 +37,6 @@ class VOCDataset(Dataset):
                 contrast=0.2,
                 saturation=0.2,
                 hue=0.0,
-                p=0.5
-            ),
-            A.RandomResizedCrop(
-                size=(400, 400),
-                scale=(0.8, 1.0),
                 p=0.5
             ),
         ], bbox_params=A.BboxParams(
