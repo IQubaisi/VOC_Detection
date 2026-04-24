@@ -32,7 +32,7 @@ def load_model(checkpoint_path, num_classes, device):
     return model
 
 # SECTION 5: Load image
-# This is where the two approaches split
+# TWO APPROACHES: Own image / Dataset Image
 def load_image(image_path, root, image_index):
     if image_path is not None:
         # Approach B — your own image
